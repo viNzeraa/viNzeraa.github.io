@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TheWatchList</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Noto+Serif+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Login screen -->
+  <div id="login-screen" class="screen active">
+    <div class="login-bg"></div>
+    <div class="login-box">
+      <div class="login-logo">
+        <span class="logo-the">THE</span>
+        <span class="logo-watch">WATCH</span>
+        <span class="logo-list">LIST</span>
+      </div>
+      <p class="login-tagline">My personal watchlist of shows.</p>
+
+      <div id="auth-login">
+        <div class="auth-screen-label">Enter Password</div>
+        <input type="password" id="login-password" class="login-input" placeholder="Password" onkeydown="if(event.key==='Enter')handleLogin()" />
+        <div id="login-error" class="login-error hidden"></div>
+        <button class="login-btn" onclick="handleLogin()">Unlock</button>
+      </div>
+
+    </div>
+  </div>
+
+<!-- Main app -->
+  <div id="app-screen" class="screen">
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+      <div class="nav-logo">
+        <span class="logo-the">THE</span><span class="logo-watch">WATCH</span><span class="logo-list">LIST</span>
+      </div>
+      <div class="nav-filters">
+        <button class="filter-btn active" onclick="filterCategory('all', this)">All</button>
+        <button class="filter-btn" onclick="filterCategory('anime', this)">Anime</button>
+        <button class="filter-btn" onclick="filterCategory('manga', this)">Manga</button>
+        <button class="filter-btn" onclick="filterCategory('tv', this)">TV Shows</button>
+      </div>
+      <div class="nav-right">
+        <span id="user-badge" class="user-badge"></span>
+        <button class="nav-icon-btn" id="mylist-btn" onclick="toggleMyList()" title="My Completed List">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        </button>
+        <button class="nav-icon-btn" id="logout-nav-btn" onclick="handleLogout()" title="Logout">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </nav>
+
+<!-- Banner -->
+    <div class="hero-banner" id="hero-banner">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="hero-category" id="hero-cat">ANIME</div>
+        <div class="hero-title" id="hero-title">Attack on Titan</div>
+        <div class="hero-desc" id="hero-desc">Humanity lives behind enormous walls protecting them from man-eating giants called Titans. When the walls are breached, young Eren vows to fight back.</div>
+        <div class="hero-actions">
+          <button class="hero-btn" id="hero-complete-btn" onclick="heroMarkComplete()">Mark Complete</button>
+        </div>
+      </div>
+    </div>
+
+  <!-- Add button -->
+    <div id="admin-toolbar" class="admin-toolbar hidden">
+      <button class="add-item-btn" onclick="openModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add New
+      </button>
+    </div>
+
+<!-- Grid -->
+    <div class="section-label" id="section-label">All Titles</div>
+    <div class="card-grid" id="card-grid"></div>
+
+<!-- MyList Panel -->
+    <div id="mylist-panel" class="mylist-panel hidden">
+      <div class="mylist-header">
+        <span>My Completed List</span>
+        <button onclick="toggleMyList()" class="close-panel">✕</button>
+      </div>
+      <div id="mylist-items" class="mylist-items"></div>
+    </div>
+
+  <!-- Add/Edit -->
+    <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModalOutside(event)">
+      <div class="modal-box">
+        <div class="modal-title" id="modal-title">Add New Title</div>
+        <input type="hidden" id="edit-id" />
+
+        <label class="modal-label">Category</label>
+        <select id="m-category" class="modal-input">
+          <option value="anime">Anime</option>
+          <option value="manga">Manga</option>
+          <option value="tv">TV Show</option>
+        </select>
+
+        <label class="modal-label">Title</label>
+        <input type="text" id="m-title" class="modal-input" placeholder="e.g. Demon Slayer" />
+
+        <label class="modal-label">Description</label>
+        <textarea id="m-desc" class="modal-input modal-textarea" placeholder="Short description..."></textarea>
+
+        <label class="modal-label">Genre / Tags (comma separated)</label>
+        <input type="text" id="m-tags" class="modal-input" placeholder="e.g. Action, Fantasy" />
+
+        <label class="modal-label">Rating (1–10)</label>
+        <input type="number" id="m-rating" class="modal-input" min="1" max="10" placeholder="8.5" />
+
+        <label class="modal-label">Year</label>
+        <input type="number" id="m-year" class="modal-input" placeholder="2024" />
+
+        <!-- IMAGE SECTION -->
+        <label class="modal-label">Poster Image</label>
+        <div class="image-upload-area" id="image-upload-area" onclick="document.getElementById('m-img-file').click()">
+          <img id="image-preview" class="image-preview hidden" />
+          <div id="upload-placeholder" class="upload-placeholder">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span>Click to upload poster image</span>
+            <small>or paste an image URL below</small>
+          </div>
+        </div>
+        <input type="file" id="m-img-file" accept="image/*" class="hidden" onchange="handleImageFile(event)" />
+        <input type="text" id="m-img-url" class="modal-input" placeholder="https://... (image URL)" oninput="handleImageUrl(this.value)" />
+
+        <div class="modal-api-section">
+          <div class="modal-api-label">Auto-fetch cover from API <span class="modal-api-note">(leave blank to skip)</span></div>
+          <div class="modal-api-row">
+            <div class="modal-api-field">
+              <label class="modal-label" style="margin-top:0">MAL ID <span class="modal-api-note">(anime / manga)</span></label>
+              <input type="number" id="m-mal-id" class="modal-input" placeholder="e.g. 16498" />
+            </div>
+            <div class="modal-api-field">
+              <label class="modal-label" style="margin-top:0">TMDB ID <span class="modal-api-note">(TV shows)</span></label>
+              <input type="number" id="m-tmdb-id" class="modal-input" placeholder="e.g. 1396" />
+            </div>
+          </div>
+          <div class="modal-api-hint">Find MAL IDs at <b>myanimelist.net</b> · TMDB IDs at <b>themoviedb.org</b></div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+          <button class="modal-save" onclick="saveItem()">Save</button>
+        </div>
+      </div>
+    </div>
+
+<!-- Details -->
+    <div id="detail-overlay" class="modal-overlay hidden" onclick="closeDetailOutside(event)">
+      <div class="detail-box">
+        <button class="detail-close" onclick="closeDetail()">✕</button>
+        <div class="detail-inner">
+          <div class="detail-poster-wrap">
+            <img id="detail-img" class="detail-poster" src="" alt="" />
+          </div>
+          <div class="detail-info">
+            <div class="detail-cat" id="detail-cat"></div>
+            <div class="detail-title" id="detail-title-text"></div>
+            <div class="detail-meta" id="detail-meta"></div>
+            <div class="detail-tags" id="detail-tags"></div>
+            <div class="detail-desc" id="detail-desc-text"></div>
+            <div class="detail-actions">
+              <button class="hero-btn" id="detail-complete-btn" onclick="detailMarkComplete()">Mark Complete</button>
+              <div id="detail-admin-btns" class="detail-admin-btns hidden">
+                <button class="edit-btn" onclick="editCurrentDetail()">Edit</button>
+                <button class="delete-btn" onclick="deleteCurrentDetail()">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end of appscreen -->
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
